@@ -80,11 +80,18 @@ for k = 1:length(species)
 end
 
 % plot out the profiles of all species
+figure;
 subplot(2,1,1);
 hold on
 for i=1:length(species)
+  if i == 1
+    yyaxis left
+  else
+    yyaxis right
+  end
   plot(timeatm{i},Patm{i},'DisplayName',species{i});
 end
+yyaxis left
 xlabel('Time [hours]');
 ylabel('Pressure of Species [bar]');
 title('Pressure profile in headspace for membrane');
@@ -95,7 +102,13 @@ subplot(2,1,2);
 hold on
 for i=1:length(species)
   plot(timeatm{i},mgHS{i},'DisplayName',species{i});
+  if i == 1
+    yyaxis left
+  else
+    yyaxis right
+  end
 end
+yyaxis left
 xlabel('Time [hours]');
 ylabel('Total Mass Released [mg]');
 title('Release profile of coffee bean');
