@@ -6,7 +6,7 @@ clc
 %% Environment speficications
   headspaceVol = 300; % headspace volume [ml]
   temperature  =  23; % temperature [degC]
-  tend = 001;         % simulation time in hours
+  tend = 100;         % simulation time in hours
 %%
 %% Membrane specifications
   memThick = 5;   % thickness of membrane [microns]
@@ -44,7 +44,7 @@ mi0 = mw .* yhs_0 .* Pl .* Vhead .*(10^-6)./( R .* (T+273.15) );
 % get equilibrium partial pressure using 
 % henries law
 C_mol  = Cinf * densi ./ mw;
-Peqbrm = Henry.*C_mol; 
+Peqbrm = Henry.*C_mol;
 
 % define plotting placeholders
 timeatm = cell(1,length(species));
@@ -75,6 +75,7 @@ for k = 1:length(species)
   release_profile = zeros(size(sol.x));
   for i = 1:length(sol.x)
     release_profile(i) = Rel_fun(sol.x(i)) .* (Peqbrm(k)-P(sol.y(i))) .* ((Peqbrm(k)-P(sol.y(i)))>0);
+    release_profile(i) = release_profile(i) + ((Peqbrm(k)-P(sol.y(i)))<0) .* Rel_fun(sol.x(i));%.* (Peqbrm(k));
   end
   mgHS{k} = release_profile;
 end
