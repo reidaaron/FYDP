@@ -41,11 +41,6 @@ tspan = 0:tend*3600;
 % convert pressue initial conditions to mass
 mi0 = mw .* yhs_0 .* Pl .* Vhead .*(10^-6)./( R .* (T+273.15) );
 
-% get equilibrium partial pressure using 
-% henries law
-C_mol  = Cinf * densi ./ mw;
-Peqbrm = Henry.*C_mol;
-
 % define plotting placeholders
 timeatm = cell(1,length(species));
 Patm = cell(1,length(species));
@@ -59,8 +54,13 @@ for k = 1:length(species)
   J = @(miHS) membraneFlux(memThick,Vhead,T,R,Pig(k),GMV,mw(k),miHS,Pl(k));
   P = @(miHS) (miHS./mw(k)) .*(R.*(T+273.15)./Vhead) .* (1/10^-6);
 
+  % get equilibrium pressure
+  C_bean = @(t,miHS) Cinf(k) - miHS/totalCoffee;
+  C_mol = @(t,miHS) C_bean(t,miHS) * densi ./ mw(k);
+  Peqbrm = @(t,miHS) Henry(k) .* C_mol(t,miHS);
+
   % define ode system
-  dRel_fun= @(t,miHS) dCrank(Deff(k),rbean,t,Cinf(k)) .* totalCoffee .* (P(miHS)<Peqbrm(k));
+  dRel_fun= @(t,miHS) dCrank(Deff(k),rbean,t,Cinf(k)) .* totalCoffee .* (P(miHS)<Peqbrm(t,miHS));
   Rel_fun = @(t,miHS) totalCrank(Deff(k),rbean,t,Cinf(k)) .* totalCoffee;
   sys = @(t,miHS) dRel_fun(t,miHS) - Asurf .* J(miHS);
 
@@ -71,11 +71,20 @@ for k = 1:length(species)
   Patm{k} = P(sol.y);
 
   % build profile of release from bean of species
-  % or consumption in the case of oxygen (to consider oxidation)
   release_profile = zeros(size(sol.x));
   for i = 1:length(sol.x)
-    release_profile(i) = Rel_fun(sol.x(i)) .* (Peqbrm(k)-P(sol.y(i))) .* ((Peqbrm(k)-P(sol.y(i)))>0);
-    release_profile(i) = release_profile(i) + ((Peqbrm(k)-P(sol.y(i)))<0) .* Rel_fun(sol.x(i));%.* (Peqbrm(k));
+    t = sol.x(i);
+    miHS = sol.y(i);
+
+    if P(miHS) < Peqbrm(t,miHS)
+      release_profile(i) = Rel_fun(sol.x(i));
+    else
+      if i > 2
+        release_profile(i) = release_profile(i-1);
+      else
+        release_profile(i) = 0
+      end
+    end
   end
   mgHS{k} = release_profile;
 end
