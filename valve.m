@@ -29,6 +29,8 @@ clc
   species=species(2:end);
   Deff = xlsread('Workbook1.xlsx',1,sprintf('C2:C%d',1+length(species)));
   Cinf = xlsread('Workbook1.xlsx',1,sprintf('D2:D%d',1+length(species)));
+  Pstar = xlsread('Workbook1.xlsx',1,sprintf('E2:E%d',1+length(species)));
+  Henry = xlsread('Workbook1.xlsx',1,sprintf('F2:F%d',1+length(species)));
   mw = xlsread('Workbook1.xlsx',1,sprintf('G2:G%d',1+length(species)));
   Pl = xlsread('Workbook1.xlsx',1,sprintf('H2:H%d',1+length(species)));
   yhs_0 = xlsread('Workbook1.xlsx',1,sprintf('I2:I%d',1+length(species)));
@@ -61,8 +63,13 @@ mgHS = cell(1,length(species));
 % define flux through valve (area is not included since it cancels out)
 J = @(miHS) number * Q(miHS) .* ones(size(species)) ;
 
+% get equilibrium pressure
+C_bean = @(t,miHS) Cinf - miHS/totalCoffee;
+C_mol = @(t,miHS) C_bean(t,miHS) * densi ./ mw;
+Peqbrm = @(t,miHS) Henry .* C_mol(t,miHS);
+
 % define ode system
-dRel_fun= @(t,miHS) dCrank(Deff,rbean,t,Cinf) .* totalCoffee;
+dRel_fun= @(t,miHS) dCrank(Deff,rbean,t,Cinf) .* totalCoffee .* (P(miHS)<Peqbrm(t,miHS));
 sys = @(t,miHS) dRel_fun(t,miHS) - P(miHS)/(sum(P(miHS))) .* J(miHS);
 
 % solve ode system and store in species values
@@ -78,8 +85,22 @@ end
 release_profile = zeros(length(species),length(sol.x));
 for i=1:length(species)
   rel = @(t) totalCrank(Deff(i),rbean,t,Cinf(i)) .* totalCoffee;
+  
   for j=1:length(sol.x)
-    release_profile(i,j) = rel(sol.x(j));
+    t = sol.x(j);
+    miHS = sol.y(:,j);
+    P_eq = P(miHS) < Peqbrm(t,miHS);
+
+    if P_eq(i)
+      release_profile(i,j) = rel(sol.x(j));
+    else
+      if j> 2
+        release_profile(i,j) = release_profile(i,j-1);
+      else
+        release_profile(i,j) = 0;
+      end
+    end
+    
   end
 end
 
