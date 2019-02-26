@@ -24,8 +24,9 @@ Co = 1; % initial concentration as a percentage
 figure;
 hold on
 
+colours = ['b', 'r', 'g', 'y', 'c', 'm'];
 
-for i = 1:length(compounds)
+for i = 1:1
     indx = find(species_id==i);
     ri = max(r(indx));
     ti = time(indx);
@@ -36,20 +37,22 @@ for i = 1:length(compounds)
 	totalCrankm = @(Deff, t) totalCrank(Deff, ri, t, Co);
 
 	% solve for Deff using initial guess Deff0
-	Deff(i) = nlinfit(ti, M_releasedi, totalCrankm, Deff0(i));
-    M_pred = totalCrankm(Deff(i), ti);
+	[Deff(i), R, J, COVB, MSE, ERRORMODELINFO] = nlinfit(ti, M_releasedi, totalCrankm, Deff0(i));
+    t_pred = linspace(min(ti), max(ti));
+    M_pred = totalCrank(Deff(i), ri, t_pred, ones(size(t_pred)));
     
-    ti = ti / 3600 / 24; % convert units back to day
+    % convert units back to day
+    ti = ti / 3600 / 24;
+    t_pred = t_pred / 3600 / 24;
     
-    plot(ti, M_releasedi, 'o', 'DisplayName', strcat(species_name{i},' - measured'));
-    plot(ti, M_pred, '-', 'DisplayName', strcat(species_name{i}, ' - predicted'));
+    plot(ti, M_releasedi, 'o', 'Color', colours(i), 'DisplayName', strcat(species_name{i},' - measured'));
+    plot(t_pred, M_pred, '-', 'Color', colours(i), 'DisplayName', strcat(species_name{i}, ' - predicted'));
     xlabel('Time [days]');
     ylabel('Mass released [%]');
     title('Curve fitting for Diffusion Coefficients');
     legend show
     
     strcat(species_name{i}, ': ', num2str(Deff(i)))
-    
 end
 
 hold off
