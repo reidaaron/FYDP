@@ -26,7 +26,7 @@ hold on
 
 colours = ['b', 'r', 'g', 'y', 'c', 'm'];
 
-for i = 1:1
+for i = 1:length(compounds)
     indx = find(species_id==i);
     ri = max(r(indx));
     ti = time(indx);
