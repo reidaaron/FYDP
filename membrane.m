@@ -93,7 +93,7 @@ subplot(2,1,1);
 hold on
 plot(tspan./3600, Patm,'LineWidth',2 );
 xlabel('Time [hours]');
-ylabel('Pressure in Bag [barg]');
+ylabel('Pressure [barg]');
 title('Pressure profile in headspace for membrane');
 hold off
 
@@ -105,7 +105,7 @@ for i=1:length(species)
 end
 xlabel('Time [hours]','fontsize',30);
 ylabel('Percent Retained','fontsize',30);
-title('Release profile of coffee bean','fontsize',30);
+title('Retention profile of coffee bean','fontsize',30);
 legend show
 hold off
 
