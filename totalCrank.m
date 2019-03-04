@@ -17,5 +17,5 @@ function C_bean = totalCrank(Deff,r,t,Co)
     exponent = -Deff * i^2 * 3.14^2 /(r^2);
     C_bean = C_bean + 1/i^2 * exp(exponent*t);
   end
-  C_bean = Co - 6*Co/(3.14)^2 * C_bean;
+  C_bean = Co - 6*Co/(3.14)^2 .* C_bean;
 end
