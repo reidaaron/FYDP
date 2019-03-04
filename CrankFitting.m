@@ -50,6 +50,7 @@ for i = 1:length(compounds)
     xlabel('Time [days]');
     ylabel('Mass released [%]');
     title('Curve fitting for Diffusion Coefficients');
+    legend('Location', 'se');
     legend show
     
     strcat(species_name{i}, ': ', num2str(Deff(i)))
