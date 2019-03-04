@@ -71,22 +71,17 @@ for k = 1:length(species)
   Patm{k} = P(sol.y);
 
   % build profile of release from bean of species
-  release_profile = zeros(size(sol.x));
+  in_headspace = zeros(size(sol.x));
+  in_bean = zeros(size(sol.x));
+  total_released = zeros(size(sol.x));
   for i = 1:length(sol.x)
     t = sol.x(i);
     miHS = sol.y(i);
-
-    if P(miHS) < Peqbrm(t,miHS)
-      release_profile(i) = Cinf(k) - Asurf .* J(miHS) * t; %Rel_fun(sol.x(i));
-    else
-      if i > 2
-        release_profile(i) = release_profile(i-1);
-      else
-        release_profile(i) = 0
-      end
-    end
+    in_headspace(i) = sol.y(i);
+    total_released(i) = sum(in_headspace);
+    in_bean(i) = Cinf(k) * totalCoffee - total_released(i);
   end
-  mgHS{k} = abs(release_profile);
+  mgHS{k} = (1 - in_bean/(Cinf(k)*totalCoffee)) .* 100;
 end
 
 % plot out the profiles of all species
