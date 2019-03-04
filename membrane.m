@@ -77,7 +77,7 @@ for k = 1:length(species)
     miHS = sol.y(i);
 
     if P(miHS) < Peqbrm(t,miHS)
-      release_profile(i) = Rel_fun(sol.x(i));
+      release_profile(i) = Cinf(k) - Asurf .* J(miHS) * t; %Rel_fun(sol.x(i));
     else
       if i > 2
         release_profile(i) = release_profile(i-1);
@@ -86,7 +86,7 @@ for k = 1:length(species)
       end
     end
   end
-  mgHS{k} = release_profile;
+  mgHS{k} = abs(release_profile);
 end
 
 % plot out the profiles of all species
@@ -112,15 +112,9 @@ subplot(2,1,2);
 hold on
 for i=1:length(species)
   plot(timeatm{i},mgHS{i},'DisplayName',species{i});
-  if i == 1
-    yyaxis left
-  else
-    yyaxis right
-  end
 end
-yyaxis left
 xlabel('Time [hours]');
-ylabel('Total Mass Released [mg]');
+ylabel('Percent Released');
 title('Release profile of coffee bean');
 legend show
 hold off
