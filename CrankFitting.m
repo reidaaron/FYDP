@@ -22,6 +22,7 @@ Deff = zeros(size(Deff0));
 Co = 1; % initial concentration as a percentage
 
 figure;
+%figure('Position',[0 0 1920 1360]); set(gca,'FontSize',16);
 hold on
 
 colours = ['b', 'r', 'g', 'y', 'c', 'm'];
@@ -44,16 +45,17 @@ for i = 1:length(compounds)
     % convert units back to day
     ti = ti / 3600 / 24;
     t_pred = t_pred / 3600 / 24;
-    
-    plot(ti, M_releasedi, 'o', 'Color', colours(i), 'DisplayName', strcat(species_name{i},' - measured'));
-    plot(t_pred, M_pred, '-', 'Color', colours(i), 'DisplayName', strcat(species_name{i}, ' - predicted'));
-    xlabel('Time [days]');
-    ylabel('Mass released [%]');
-    title('Curve fitting for Diffusion Coefficients');
+    plot(ti, M_releasedi,'o','Color',colours(i),'DisplayName',...
+        strcat(species_name{i},' - measured'),'LineWidth',2);
+    plot(t_pred, M_pred,'-','Color',colours(i),'DisplayName',...
+        strcat(species_name{i},' - predicted'),'LineWidth',4);
+    xlabel('Time [days]','fontsize',30);
+    ylabel('Mass released [%]','fontsize',30);
+    title('Curve fitting for Diffusion Coefficients','fontsize',30);
     legend('Location', 'se');
     legend show
     
-    strcat(species_name{i}, ': ', num2str(Deff(i)))
+    %strcat(species_name{i}, ': ', num2str(Deff(i)))
 end
 
 hold off
