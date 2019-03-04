@@ -36,14 +36,15 @@ clc
 
 % create useful shorthands
 T = temperature; R = RcmHg; Vhead = headspaceVol;
-tspan = 0:tend*3600;
+spacing=tend*36001E-3;
+tspan = 0:spacing:tend*3600;
 
 % convert pressue initial conditions to mass
 mi0 = mw .* yhs_0 .* Pl .* Vhead .*(10^-6)./( R .* (T+273.15) );
 
 % define plotting placeholders
 timeatm = cell(1,length(species));
-Patm = cell(1,length(species));
+Patm = zeros(size(tspan));
 mgHS = cell(1,length(species));
 
 % for all 3 species loop through and solve system
@@ -68,7 +69,6 @@ for k = 1:length(species)
   % store as pressure in headspace
   sol = ode45(sys, tspan, mi0(k));
   timeatm{k} = sol.x./3600; 
-  Patm{k} = P(sol.y);
 
   % build profile of release from bean of species
   in_headspace = zeros(size(sol.x));
@@ -81,36 +81,31 @@ for k = 1:length(species)
     total_released(i) = sum(in_headspace);
     in_bean(i) = Cinf(k) * totalCoffee - total_released(i);
   end
-  mgHS{k} = (1 - in_bean/(Cinf(k)*totalCoffee)) .* 100;
+  mgHS{k} = 100-(1 - in_bean/(Cinf(k)*totalCoffee)) .* 100;
+
+  % getting total pressure
+  Patm = Patm + P(interp1(sol.x,sol.y,tspan));
 end
 
 % plot out the profiles of all species
 figure;
 subplot(2,1,1);
 hold on
-for i=1:length(species)
-  if i == 1
-    yyaxis left
-  else
-    yyaxis right
-  end
-  plot(timeatm{i},Patm{i},'DisplayName',species{i});
-end
-yyaxis left
+plot(tspan./3600, Patm,'LineWidth',2 );
 xlabel('Time [hours]');
-ylabel('Pressure of Species [bar]');
+ylabel('Pressure in Bag [barg]');
 title('Pressure profile in headspace for membrane');
-legend show
 hold off
 
 subplot(2,1,2);
+%figure('Position',[0 0 1920 1080]); set(gca,'FontSize',16);
 hold on
 for i=1:length(species)
-  plot(timeatm{i},mgHS{i},'DisplayName',species{i});
+  plot(timeatm{i},mgHS{i},'DisplayName',species{i},'LineWidth',4);
 end
-xlabel('Time [hours]');
-ylabel('Percent Released');
-title('Release profile of coffee bean');
+xlabel('Time [hours]','fontsize',30);
+ylabel('Percent Retained','fontsize',30);
+title('Release profile of coffee bean','fontsize',30);
 legend show
 hold off
 
