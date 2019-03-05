@@ -17,7 +17,7 @@ clc
 %% https://www.wojinvalve.com/coffee-valve/wj1902.html
 %% Note: We assume flow rate of valve is linear
 %%       see implementation in valveFlux formula
-  number = 01;    % number of valves
+  number = 04;    % number of valves
   diam   = 20E-3; % [m]
   closeP = 2E-3;  % [bar]
   openMP = 8E-3;  % [bar]
@@ -82,10 +82,11 @@ for i=1:length(sol.y)
 end
 
 % get release profile from bean
-release_profile = zeros(length(species),length(sol.x));
+retained = zeros(length(species),length(sol.x));
 for i=1:length(species)
+  miHS = sol.y(i,:);
   rel = @(t) totalCrank(Deff(i),rbean,t,Cinf(i)) .* totalCoffee;
-  
+
   for j=1:length(sol.x)
     t = sol.x(j);
     miHS = sol.y(:,j);
@@ -99,9 +100,10 @@ for i=1:length(species)
       else
         release_profile(i,j) = 0;
       end
-    end
-    
+    end  
   end
+
+  retained(i,:) = (Cinf(i)*totalCoffee -release_profile(i,:) )./(Cinf(i)*totalCoffee) .* 100;
 end
 
 % plot out profiles of all species
@@ -126,18 +128,12 @@ figure;
 
   subplot(3,1,2);
   hold on
-  for i=1:length(species)
-    if i == 1
-      yyaxis left
-    else
-      yyaxis right
-    end
-    plot(sol.x./3600,release_profile(i,:),'DisplayName',species{i});
+  for i = 1:length(species)
+    plot(sol.x./3600,retained(i,:),'DisplayName',species{i});
   end
   xlabel('Time [hours]');
-  yyaxis left
-  ylabel('Total Mass Released [mg]');
-  title('Release profile of coffee bean');
+  ylabel('Percent Retained');
+  title('Retention profile of coffee bean');
   legend show
   hold off
 
