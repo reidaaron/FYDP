@@ -19,11 +19,17 @@ clc
 %% Environment speficications
   headspaceVol = 300; % headspace volume [ml]
   temperature  =  23; % temperature [degC]
-  tend = 100;         % simulation time in hours
+  tend = 480;         % simulation time in hours
 %% Membrane specifications
   memThick = 5;   % thickness of membrane [microns]
   Asurf = 5;      % membrane surface area [cm^2]
 
   % plot out the profiles of all species
 [timesol,P,release_percent] = membrane( temperature, headspaceVol, species,Pig,Deff,Cinf,Pstar,Henry,mw,Pl,yhs_0,tend, totalCoffee, densi, rbean, memThick, Asurf );
-[timespan, P_atm, retained, y] = valve( temperature, headspaceVol, species,Pig,Deff,Cinf,Pstar,Henry,mw,Pl,yhs_0,tend, totalCoffee, densi, rbean );
+
+hold on
+for i=1:length(species)
+  plot(timesol{i},release_percent{i},'DisplayName',species{i});
+end
+legend show
+hold off

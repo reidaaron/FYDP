@@ -34,7 +34,7 @@ function [timespan,P_atm,released_percent] = membrane( T, Vhead, species,Pig,Def
 
     % solve ode system for mass of species in headspace.
     % store as pressure in headspace
-    sol = ode45(sys, [0, tend], mi0(k));
+    sol = ode45(sys, [0, tend*3600], mi0(k));
     timeatm{k} = sol.x./3600; 
 
     % build profile of release from bean of species
