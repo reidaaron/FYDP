@@ -82,26 +82,18 @@ for i=1:length(sol.y)
 end
 
 % get release profile from bean
-release_profile = zeros(length(species),length(sol.x));
+retained = zeros(length(species),length(sol.x));
 for i=1:length(species)
-  rel = @(t) totalCrank(Deff(i),rbean,t,Cinf(i)) .* totalCoffee;
-  
-  for j=1:length(sol.x)
-    t = sol.x(j);
-    miHS = sol.y(:,j);
-    P_eq = P(miHS) < Peqbrm(t,miHS);
+  miHS = sol.y(i,:);
+  total_released = zeros(size(miHS));
+  in_headspace = zeros(size(miHS));
 
-    if P_eq(i)
-      release_profile(i,j) = rel(sol.x(j));
-    else
-      if j> 2
-        release_profile(i,j) = release_profile(i,j-1);
-      else
-        release_profile(i,j) = 0;
-      end
-    end
-    
+  for j=2:length(miHS)
+    total_released(j) = trapz(sol.x(1:j),sol.y(1:j));
   end
+
+  in_bean = Cinf(i) * totalCoffee - total_released;
+  retained(i,:) = total_released;%100-(1 - in_bean/(Cinf(i)*totalCoffee)) .* 100;
 end
 
 % plot out profiles of all species
@@ -126,18 +118,12 @@ figure;
 
   subplot(3,1,2);
   hold on
-  for i=1:length(species)
-    if i == 1
-      yyaxis left
-    else
-      yyaxis right
-    end
-    plot(sol.x./3600,release_profile(i,:),'DisplayName',species{i});
+  for i = 1:length(species)
+    plot(sol.x./3600,retained(i,:),'DisplayName',species{i});
   end
   xlabel('Time [hours]');
-  yyaxis left
-  ylabel('Total Mass Released [mg]');
-  title('Release profile of coffee bean');
+  ylabel('Percent Retained');
+  title('Retention profile of coffee bean');
   legend show
   hold off
 
