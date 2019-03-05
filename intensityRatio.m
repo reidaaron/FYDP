@@ -24,12 +24,30 @@ clc
   memThick = 5;   % thickness of membrane [microns]
   Asurf = 5;      % membrane surface area [cm^2]
 
-  % plot out the profiles of all species
-[timesol,P,release_percent] = membrane( temperature, headspaceVol, species,Pig,Deff,Cinf,Pstar,Henry,mw,Pl,yhs_0,tend, totalCoffee, densi, rbean, memThick, Asurf );
+% plot ratio of pyridie/2-methylbutanol and hexanal/2-methylbutanol
+hexanal  = find(strcmp(species,'Hexanal'));
+pyridine = find(strcmp(species,'Pyridine'));
+methylbutanol = find(strcmp(species,'2-methylpropanal'));
 
-hold on
-for i=1:length(species)
-  plot(timesol{i},release_percent{i},'DisplayName',species{i});
-end
-legend show
-hold off
+% solve systems
+[timesol,P,release_percent] = membrane( temperature, headspaceVol, species,Pig,Deff,Cinf,Pstar,Henry,mw,Pl,yhs_0,tend, totalCoffee, densi, rbean, memThick, Asurf );
+%[valve_T,valve_P,valve_R] = valve( temperature, headspaceVol, species,Pig,Deff,Cinf,Pstar,Henry,mw,Pl,yhs_0,tend, totalCoffee, densi, rbean );
+
+tspan = 0:tend*3600;
+y_hexanal = interp1(timesol{hexanal},release_percent{hexanal},tspan);
+y_pyridine = interp1(timesol{pyridine},release_percent{pyridine},tspan);
+y_methbutan = interp1(timesol{methylbutanol},release_percent{methylbutanol},tspan);
+tspan = tspan./(3600*24);
+
+% membrane intensity ratio
+plot(tspan,y_methbutan./y_pyridine,tspan, y_methbutan./y_hexanal, tspan, y_hexanal./y_pyridine);
+title('Membrane'); xlabel('Time [Days]'); ylabel('Intensity Ratio');
+legend('Methbu/pyridine','methybut/hexanal','hexanal/pyridein');
+
+% % valve intensity ratio
+% valve_T = valve_T./3600;
+% v_hexanal = valve_R(hexanal,:);
+% v_pyridin = valve_R(pyridine,:);
+% v_methbut = valve_R(methylbutanol,:);
+% h_p = v_methbut./v_pyridin; m_h = v_methbut./v_hexanal; m_p = v_methbut./v_pyridin;
+% plot(m_p(1:5));%,valve_T,m_h,valve_T,h_p);
